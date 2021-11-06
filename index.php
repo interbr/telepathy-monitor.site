@@ -14,6 +14,7 @@
 </script>
 </head>
 <body style="background:gray">
+<center>
 <h1>Under Construction</h1><br /><br />
 
 <table cellpadding="0" border="0" cellspacing="0">
@@ -25,6 +26,7 @@
     <td><img id="zener_5" alt=" " src="zener_5.jpg" style="width: 158px; height: 252px; border-width: 0px;"></td>
 </tr>
 </table>
+</center>
 <script>
 $("#zener_1").click(function(){
   $.ajax({         
