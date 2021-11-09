@@ -6,7 +6,14 @@
 <title>telepathy-monitor.site // with world-map</title>
 <meta name='description' content='telepathy-monitor.site with world-map'>
 <meta property="og:article:author" content='Felix Longolius'>
+<link rel="icon" href="https://telepathy-monitor.site/favicon.png" type="image/png">
 <style>
+canvas{border:none;margin:0 auto;}
+@media (min-width: 1600px)  { 
+	#telepathyCards { float: left; }
+	#telepathyMap { float: right; }
+	#telepathyCardsMapContainer { height: 470px; }
+}
 </style>
 <script>
     /*! jQuery v3.6.0 | (c) OpenJS Foundation and other contributors | jquery.org/license */
@@ -15,9 +22,10 @@
 </head>
 <body style="background:gray">
 <center>
-<h1>Under Construction</h1><br /><br />
-
-<table cellpadding="0" border="0" cellspacing="0">
+<h1 style="background:white;">telepathy-monitor.site (by Felix Longolius)</h1>
+<div id="telepathyCardsMapContainer" style="display:block;">
+<div id="telepathyCards" style="width:732px;margin:10px 0 0 0;">
+<table cellpadding="0" border="0" cellspacing="0" style="cursor:pointer;">
 <tr>
     <td><img id="zener_1" alt=" " src="zener_1.jpg" style="width: 155px; height: 252px; border-width: 0px;"></td>
     <td><img id="zener_2" alt=" " src="zener_2.jpg" style="width: 140px; height: 252px; border-width: 0px;"></td>
@@ -26,8 +34,27 @@
     <td><img id="zener_5" alt=" " src="zener_5.jpg" style="width: 158px; height: 252px; border-width: 0px;"></td>
 </tr>
 </table>
+<a href="https://telepathy-monitor.site/zener-wiki.png" target="_blank"><img src="https://telepathy-monitor.site/zener-wiki.png" style="height:auto;width:732px;cursor:zoom-in;" /></a>
+</div>
+<div id="telepathyMap" style="width:800px;margin:10px 0 10px 0;">
+<canvas id="telepathy-monitorSiteMap" width="800" height="450"></canvas>
+</div>
+</div>
+<p style="background:white;">Radio: <span id="rPlay" style="cursor:pointer;">Play</span><span id="rStop" style="display:none;cursor:pointer;">Stop</span> | <span id="rUp" style="cursor:pointer;">VolumeUp</span> | <span id="rDown" style="cursor:pointer;">VolumeDown</span><audio id="radio"></audio>
+<p style="background:white;">The idea of this website is to do telepathy and click on a monitor meanwhile. Mailto: <a href="mailto:felix@telepathy-monitor.site">felix@telepathy-monitor.site</a>. Sourcecode <a href="https://github.com/interbr/telepathy-monitor.site">at github</a>. (c) 11/2021</p>
+	<iframe src="https://minnit.chat/telepathyMonitor?embed&&nickname=" style="border:none;width:90%;height:500px;" allowTransparency="true"></iframe>
 </center>
+<script src="https://telepathy-monitor.site/worldmap/WorldMap.js"></script>
 <script>
+			var map = new Map();
+			map.draw(document.getElementById("telepathy-monitorSiteMap"));
+
+	var radioSrc = "https://icecast.radiofrance.fr/fipjazz-hifi.aac?id=telepathy-monitor.site";
+	radio.volume = 0.5;
+	$("#rPlay").click(function(){ radio.src = radioSrc; radio.play(); $("#rPlay").toggle(); $("#rStop").toggle(); });
+	$("#rStop").click(function(){ radio.src = ""; $("#rPlay").toggle(); $("#rStop").toggle(); });
+	$("#rUp").click(function(){ radio.volume += 0.1; });
+	$("#rDown").click(function(){ radio.volume -= 0.1; });
 $("#zener_1").click(function(){
   $.ajax({         
 		beforeSend: function () {             
@@ -113,31 +140,96 @@ $("#zener_5").click(function(){
 	});  
   return false;
 });
+
 var evtSource = new EventSource("https://telepathy-monitor.site/stream.php");
 evtSource.addEventListener('open', function (e) {
-						console.log("Connection to server opened (telepathy-monitor.site).");	
-					});
+	console.log("Connection to server opened (telepathy-monitor.site).");	
+});
+
 var what;
+var latitude;
+var longitude;
+var locationX;
+var locationY;
+var cardColor;
+
+evtSource.addEventListener('telepathy-monitor.site.cardhistory', function (e) {
+	what = JSON.parse(e.data);
+        for (let i = 0; i < what.length; i++) {
+			latitude = what[i].latitude;
+			longitude = what[i].longitude;
+
+			locationX = ((longitude / 360) + 0.5) * document.getElementById("telepathy-monitorSiteMap").width;
+			locationY = (1 - ((latitude / 180) + 0.5)) * document.getElementById("telepathy-monitorSiteMap").height;
+
+		if (what[i].card == 0) {
+			cardColor = "#ffffff66";
+        }
+		if (what[i].card == 1) {
+			cardColor = "yellow";
+        }
+        if (what[i].card == 2) {
+			cardColor = "red";
+        }
+        if (what[i].card == 3) {
+			cardColor = "lightblue";
+        }
+        if (what[i].card == 4) {
+			cardColor = "black";
+        }
+        if (what[i].card == 5) {
+			cardColor = "lightgreen";
+        }
+		if (what[i].card == 6) {
+			cardColor = "#aa00ff66";
+        }
+
+		document.getElementById("telepathy-monitorSiteMap").getContext("2d").beginPath();
+		document.getElementById("telepathy-monitorSiteMap").getContext("2d").arc(locationX, locationY, 3, 0, 2 * Math.PI);
+		document.getElementById("telepathy-monitorSiteMap").getContext("2d").fillStyle = cardColor;
+		document.getElementById("telepathy-monitorSiteMap").getContext("2d").fill();
+
+        }
+});
+
 evtSource.addEventListener('telepathy-monitor.site.card', function (e) {
 		
 		what = JSON.parse(e.data);
         for (let i = 0; i < what.length; i++) {
+			latitude = what[i].latitude;
+			longitude = what[i].longitude;
+
+			locationX = ((longitude / 360) + 0.5) * document.getElementById("telepathy-monitorSiteMap").width;
+			locationY = (1 - ((latitude / 180) + 0.5)) * document.getElementById("telepathy-monitorSiteMap").height;
+
 		if (what[i].card == 1) {
             $(document.body).css("background","yellow");
+			cardColor = "yellow";
         }
         if (what[i].card == 2) {
             $(document.body).css("background","red");
+			cardColor = "red";
         }
         if (what[i].card == 3) {
-            $(document.body).css("background","blue");
+            $(document.body).css("background","lightblue");
+			cardColor = "lightblue";
         }
         if (what[i].card == 4) {
             $(document.body).css("background","black");
+			cardColor = "black";
         }
         if (what[i].card == 5) {
-            $(document.body).css("background","green");
+            $(document.body).css("background","lightgreen");
+			cardColor = "lightgreen";
         }
+
+		document.getElementById("telepathy-monitorSiteMap").getContext("2d").beginPath();
+		document.getElementById("telepathy-monitorSiteMap").getContext("2d").arc(locationX, locationY, 3, 0, 2 * Math.PI);
+		document.getElementById("telepathy-monitorSiteMap").getContext("2d").fillStyle = cardColor;
+		document.getElementById("telepathy-monitorSiteMap").getContext("2d").fill();
+
         }
 });
 </script>
 </body>
+			
