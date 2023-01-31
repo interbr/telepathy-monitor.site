@@ -1,4 +1,3 @@
-![This is an image](https://worldwideweb.interlectual.org/telepathy-monitor.site.png)
 # telepathy-monitor.site
 Zener-cards on worldmap live
 
